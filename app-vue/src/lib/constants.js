@@ -1,0 +1,8 @@
+export const API_BASE = "http://127.0.0.1:8000";
+
+export const DEPARTMENTS = ["Ingenierie", "Ventes", "Marketing", "RH", "Finance", "Support", "Operations", "Juridique"];
+export const STATUSES = ["Actif", "Conge", "Termine"];
+
+export const SEARCHABLE_FIELDS = [
+  "first_name", "last_name", "email", "department", "job_title", "city", "country", "status",
+];

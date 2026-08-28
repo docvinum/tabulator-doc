@@ -1,18 +1,38 @@
-# Demo Tabulator — 3 sources de donnees, 2 frontends
+# tabulator-doc
 
-Demo complete de [Tabulator](https://tabulator.info/) illustrant la lecture/ecriture de donnees
-depuis 3 sources differentes, avec toutes les fonctionnalites d'un datatable moderne :
-tri, recherche (globale + par colonne), filtrage (texte + liste de valeurs distinctes),
-reorganisation/masquage/redimensionnement des colonnes, selection de cellules, copier-coller,
-edition directe avec validation, persistance via API et gestion d'erreurs, ainsi que le
-tri/filtre/recherche/pagination cote serveur pour un gros volume de donnees (5000 lignes).
+Reference documentation for implementing datatables with **[Tabulator](https://www.tabulator.info/)** ([GitHub](https://github.com/tabulator-tables/tabulator)), a dependency-free JavaScript table/datagrid library.
+
+This repository is written for an **AI coding agent** (or any developer) that needs to implement a Tabulator table correctly on the first try — it favors complete, copy-pasteable code over prose, and calls out the mistakes that are easy to make with this library.
+
+Target version: **Tabulator v6.x**, with notes where v5 differs.
+
+## Start here
+
+Go to **[docs/README.md](docs/README.md)** for the full table of contents.
+
+Quick links:
+- New to Tabulator → [docs/01-quickstart.md](docs/01-quickstart.md)
+- Loading data (local or from an API) → [docs/02-data-sources.md](docs/02-data-sources.md)
+- Defining columns / formatters / layout → [docs/03-columns.md](docs/03-columns.md)
+- Wiring up a real backend (pagination, sort, filter) → [docs/09-server-side-integration.md](docs/09-server-side-integration.md)
+- Using Tabulator inside Vue → [docs/10-vue-integration.md](docs/10-vue-integration.md)
+- **About to debug something weird? Check** [docs/11-pitfalls-for-ai-agents.md](docs/11-pitfalls-for-ai-agents.md) **first.**
+
+## Demo: 3 data sources, 2 frontends
+
+Alongside the reference docs, this repo also ships a working, runnable demo that puts the
+guidance above into practice: tri, recherche (globale + par colonne), filtrage (texte + liste de
+valeurs distinctes), reorganisation/masquage/redimensionnement des colonnes, selection de
+cellules, copier-coller, edition directe avec validation, persistance via API et gestion
+d'erreurs, ainsi que le tri/filtre/recherche/pagination cote serveur pour un gros volume de
+donnees (5000 lignes).
 
 Deux implementations du meme cahier des charges sont fournies, partageant le meme backend :
 
 - **`demo-vanilla/`** — JavaScript vanilla (sans framework), Tabulator charge via npm.
 - **`app-vue/`** — application Vue 3 + Vite, avec un composant `DataTable.vue` reutilisable.
 
-## Architecture
+### Architecture
 
 ```
 backend/         API FastAPI (Python) — source de verite pour 2 des 3 sources de donnees
@@ -41,9 +61,9 @@ app-vue/          Demo Vue 3 + Vite (sert public/data/employees.json + appelle l
 | **2. API endpoint** | `GET /api/employees-api` (backend, liste en memoire) | `PATCH /api/employees-api/{id}` | Cote client (petit volume) | 200 employes, persiste tant que le process backend tourne |
 | **3. SQLite (gros volume)** | `GET /api/employees` (backend, table SQLite) | `PATCH /api/employees/{id}` | **Cote serveur** (tri/filtre/recherche/pagination) | 5000 employes, persiste sur disque (`backend/data/app.db`) |
 
-## Demarrage rapide
+### Demarrage rapide
 
-### 1. Backend (requis pour les sources "API" et "SQLite")
+#### 1. Backend (requis pour les sources "API" et "SQLite")
 
 ```bash
 cd backend
@@ -61,7 +81,7 @@ cd backend && source .venv/bin/activate
 python -m scripts.generate_json_source
 ```
 
-### 2a. Demo JavaScript vanilla
+#### 2a. Demo JavaScript vanilla
 
 ```bash
 cd demo-vanilla
@@ -71,7 +91,7 @@ npm start   # sert le dossier sur http://127.0.0.1:5500 (python3 -m http.server)
 
 Ouvrir http://127.0.0.1:5500
 
-### 2b. Application Vue 3
+#### 2b. Application Vue 3
 
 ```bash
 cd app-vue
@@ -82,7 +102,7 @@ npm run dev   # http://127.0.0.1:5173
 Les deux frontends appellent le backend sur `http://127.0.0.1:8000` (CORS ouvert, `API_BASE`
 configurable dans `js/constants.js` / `src/lib/constants.js`).
 
-## Fonctionnalites implementees
+### Fonctionnalites implementees
 
 - **Lecture** : JSON statique, endpoint API (donnees en memoire), SQLite via le backend.
 - **Ecriture/modification via API** : `PATCH` avec validation serveur (Pydantic) — departement,
@@ -110,7 +130,7 @@ configurable dans `js/constants.js` / `src/lib/constants.js`).
 - **Serveur pour gros volume** : la source SQLite (5000 lignes) fonctionne entierement en mode
   `remote` (`paginationMode`, `sortMode`, `filterMode`), aucune donnee n'est chargee en trop.
 
-## Notes techniques
+### Notes techniques
 
 - Tabulator (community/MIT) est installe via npm (`tabulator-tables`) dans les deux projets —
   aucune dependance a un CDN externe.

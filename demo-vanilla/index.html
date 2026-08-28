@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo Tabulator (JS vanilla)</title>
+  <link rel="stylesheet" href="node_modules/tabulator-tables/dist/css/tabulator.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Demo Tabulator &mdash; JavaScript vanilla</h1>
+    <p>Trois sources de donnees, une seule bibliotheque : tri, recherche, filtres, edition et persistance.</p>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="json">1. JSON local</button>
+    <button class="tab-btn" data-tab="api">2. API endpoint</button>
+    <button class="tab-btn" data-tab="sqlite">3. SQLite (gros volume, serveur)</button>
+  </nav>
+
+  <main>
+    <section class="tab-panel active" id="panel-json" data-panel="json">
+      <p class="source-note">
+        Source : fichier <code>data/employees.json</code> charge directement par le navigateur (pas d'appel backend).
+        Toutes les operations (tri, recherche, filtres) sont effectuees cote client. Les editions restent locales
+        (aucune API de persistance pour une source JSON statique).
+      </p>
+      <div class="toolbar">
+        <input type="search" class="global-search" data-target="json" placeholder="Recherche globale..." />
+        <button class="col-vis-btn" data-target="json">Colonnes</button>
+        <div class="col-vis-menu" data-target="json" hidden></div>
+      </div>
+      <div id="table-json"></div>
+    </section>
+
+    <section class="tab-panel" id="panel-api" data-panel="api">
+      <p class="source-note">
+        Source : <code>GET/PATCH /api/employees-api</code> (jeu de donnees en memoire cote serveur, 200 lignes).
+        Lecture et ecriture passent par l'API ; tri/recherche/filtres restent cote client (petit volume).
+      </p>
+      <div class="toolbar">
+        <input type="search" class="global-search" data-target="api" placeholder="Recherche globale..." />
+        <button class="col-vis-btn" data-target="api">Colonnes</button>
+        <div class="col-vis-menu" data-target="api" hidden></div>
+      </div>
+      <div id="table-api"></div>
+    </section>
+
+    <section class="tab-panel" id="panel-sqlite" data-panel="sqlite">
+      <p class="source-note">
+        Source : <code>GET/PATCH /api/employees</code> (table SQLite, 5000 lignes). Tri, filtres, recherche globale
+        et pagination sont tous evalues cote serveur pour rester performant sur un gros volume.
+      </p>
+      <div class="toolbar">
+        <input type="search" class="global-search" data-target="sqlite" placeholder="Recherche globale (serveur)..." />
+        <button class="col-vis-btn" data-target="sqlite">Colonnes</button>
+        <div class="col-vis-menu" data-target="sqlite" hidden></div>
+      </div>
+      <div id="table-sqlite"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="node_modules/tabulator-tables/dist/js/tabulator.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

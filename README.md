@@ -17,3 +17,7 @@ Quick links:
 - Wiring up a real backend (pagination, sort, filter) → [docs/09-server-side-integration.md](docs/09-server-side-integration.md)
 - Using Tabulator inside Vue → [docs/10-vue-integration.md](docs/10-vue-integration.md)
 - **About to debug something weird? Check** [docs/11-pitfalls-for-ai-agents.md](docs/11-pitfalls-for-ai-agents.md) **first.**
+
+## Claude Code skill
+
+This repo also ships a self-contained [Claude Code Skill](.claude/skills/tabulator-datatable/) — copy the `.claude/skills/tabulator-datatable/` folder into any project's `.claude/skills/` to have Claude automatically reach for Tabulator (with the right patterns) whenever it implements a datatable/grid, without needing to reference this repo.

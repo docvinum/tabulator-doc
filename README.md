@@ -140,3 +140,7 @@ configurable dans `js/constants.js` / `src/lib/constants.js`).
 - Les modules `columns.js`, `persistence.js`, `rangeClipboard.js`, `constants.js` sont partages
   (quasi identiques) entre la demo vanilla (`demo-vanilla/js/`) et l'app Vue (`app-vue/src/lib/`),
   pour eviter toute divergence de comportement entre les deux implementations.
+
+## Claude Code skill
+
+This repo also ships a self-contained [Claude Code Skill](.claude/skills/tabulator-datatable/) — copy the `.claude/skills/tabulator-datatable/` folder into any project's `.claude/skills/` to have Claude automatically reach for Tabulator (with the right patterns) whenever it implements a datatable/grid, without needing to reference this repo.

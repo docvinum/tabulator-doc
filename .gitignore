@@ -1,0 +1,12 @@
+# Backend (Python)
+backend/.venv/
+backend/data/app.db
+backend/__pycache__/
+backend/**/__pycache__/
+*.pyc
+
+# Demo vanilla (Node)
+demo-vanilla/node_modules/
+
+# OS
+.DS_Store

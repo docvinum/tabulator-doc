@@ -1,0 +1,12 @@
+{
+  "name": "tabulator-demo-vanilla",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Demo Tabulator en JavaScript vanilla (3 sources de donnees).",
+  "scripts": {
+    "start": "python3 -m http.server 5500"
+  },
+  "dependencies": {
+    "tabulator-tables": "6.5.2"
+  }
+}

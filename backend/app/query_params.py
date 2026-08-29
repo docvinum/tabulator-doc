@@ -11,9 +11,18 @@ from .schemas import QUERYABLE_FIELDS
 _KEY_RE = re.compile(r"^(sort|filter)\[(\d+)\]\[(field|dir|type|value)\](?:\[(\d+)\])?$")
 
 
+def _int_param(request: Request, name: str, default: int) -> int:
+    """Un parametre non numerique (requete forgee a la main) ne doit pas produire
+    une 500 : on retombe sur la valeur par defaut."""
+    try:
+        return int(request.query_params.get(name) or default)
+    except (TypeError, ValueError):
+        return default
+
+
 def parse_tabulator_params(request: Request) -> dict:
-    page = int(request.query_params.get("page", 1) or 1)
-    size = int(request.query_params.get("size", 50) or 50)
+    page = _int_param(request, "page", 1)
+    size = _int_param(request, "size", 50)
     q = request.query_params.get("q", "").strip()
 
     sorters_by_index: dict[int, dict] = defaultdict(dict)

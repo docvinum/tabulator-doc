@@ -179,6 +179,19 @@ main { padding: 20px 32px 40px; }
   color: #c7d2fe;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .source-note {
+    background: #171f3a;
+    border-color: #2f3d6b;
+    color: #c7d2fe;
+  }
+}
+:root[data-theme="dark"] .source-note {
+  background: #171f3a;
+  border-color: #2f3d6b;
+  color: #c7d2fe;
+}
+
 .backend-note {
   background: #fffbeb;
   border: 1px solid #fcd34d;
@@ -315,25 +328,170 @@ main { padding: 20px 32px 40px; }
   background-color: var(--accent);
 }
 
-.tabulator .tabulator-header-filter { margin-top: 6px; }
 .tabulator input,
 .tabulator select,
 .tabulator textarea {
   font-family: inherit;
   color: inherit;
 }
-.tabulator .tabulator-header-filter input,
-.tabulator .tabulator-header-filter select {
+
+/* ---- Filtres d'en-tete (voir js/headerFilters.js) ----
+   Les couleurs sont explicites et non heritees : l'en-tete de colonne passe en
+   `color: var(--pager-active-text)` quand SelectRange marque la colonne comme
+   selectionnee, ce qui rendait le texte des filtres blanc sur fond blanc. ---- */
+.tabulator .tabulator-header-filter { margin-top: 6px; }
+
+.thf {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+.thf .thf-field {
   width: 100%;
   box-sizing: border-box;
   height: 26px;
-  padding: 0 7px;
+  margin: 0;
+  padding: 0 22px 0 7px;
   border: 1px solid var(--table-border);
   border-radius: 5px;
   background: var(--input-surface);
+  color: var(--text);
+  font-family: inherit;
   font-size: 11.5px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  outline: none;
 }
-.tabulator .tabulator-header-filter input::placeholder { color: var(--placeholder); }
+.thf .thf-field:focus,
+.thf.is-open .thf-field { border-color: var(--accent); }
+.thf .thf-field::placeholder { color: var(--placeholder); }
+.thf.is-active .thf-field { border-color: var(--accent); }
+
+.thf-list-field {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 24px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.thf-list-field.is-empty { color: var(--placeholder); }
+.thf-list-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.thf-count {
+  flex: none;
+  min-width: 15px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--pager-active-bg);
+  color: var(--pager-active-text);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 15px;
+  text-align: center;
+}
+.thf-count[hidden] { display: none; }
+
+.thf-clear {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cell-muted);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+.thf-clear:hover { background: var(--surface-tint); color: var(--text); }
+.thf-clear[hidden] { display: none; }
+
+/* Le filtre "Manager" utilise l'editeur tickCross de Tabulator (case tristate) :
+   il n'a pas de champ texte, donc pas de bouton d'effacement (un 3e clic
+   revient a l'etat neutre). On lui garde une couleur explicite malgre tout. */
+.tabulator .tabulator-header-filter input,
+.tabulator .tabulator-header-filter select { color: var(--text); }
+
+/* Popup de selection multiple : rattache a <body>, donc style globalement. */
+.thf-popup {
+  position: fixed;
+  z-index: 200;
+  max-width: 280px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(16, 24, 40, .18);
+  color: var(--text);
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  overflow: hidden;
+}
+.thf-popup-hint {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--table-border);
+  color: var(--muted);
+  font-size: 10.5px;
+}
+.thf-popup-list {
+  max-height: 260px;
+  padding: 4px;
+  overflow-y: auto;
+}
+.thf-popup-empty { padding: 8px 10px; color: var(--muted); }
+.thf-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.thf-option:hover,
+.thf-option.is-focused { background: var(--surface-tint); }
+.thf-option-box {
+  position: relative;
+  flex: none;
+  width: 13px;
+  height: 13px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--input-surface);
+}
+.thf-option.is-selected .thf-option-box {
+  border-color: var(--pager-active-border);
+  background: var(--pager-active-bg);
+}
+.thf-option.is-selected .thf-option-box::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 3px;
+  height: 6px;
+  border: solid var(--pager-active-text);
+  border-width: 0 1.6px 1.6px 0;
+  transform: rotate(45deg);
+}
+.thf-option-label { overflow: hidden; text-overflow: ellipsis; }
+
 .tabulator .tabulator-col[tabulator-field="salary"] .tabulator-header-filter input,
 .tabulator .tabulator-col[tabulator-field="hire_date"] .tabulator-header-filter input,
 .tabulator .tabulator-col[tabulator-field="rating"] .tabulator-header-filter input {

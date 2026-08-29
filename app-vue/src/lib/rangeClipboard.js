@@ -8,6 +8,63 @@ function isEditingCell(table) {
   return !!(table.modules.edit && table.modules.edit.currentCell);
 }
 
+/**
+ * Vrai si l'evenement vise une zone de saisie (recherche globale, filtre
+ * d'en-tete, editeur de cellule, zone editable). Le presse-papiers doit alors
+ * rester celui du navigateur : sans ce garde-fou, copier une cellule puis la
+ * coller dans "Recherche globale" est impossible, car le handler `paste`
+ * global detourne le collage vers la plage selectionnee et appelle
+ * preventDefault().
+ */
+function isTextEntryTarget(target) {
+  if (!(target instanceof Element)) return false;
+  if (target.isContentEditable) return true;
+  const tag = target.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+}
+
+/**
+ * Selection de texte native hors tableau (ex. un paragraphe de la page) : le
+ * Ctrl+C doit alors copier ce texte, pas la plage de cellules.
+ * Dans le tableau, la selection de plage n'est pas une selection DOM
+ * (Tabulator applique `user-select: none` sur les cellules en mode plage).
+ */
+function hasNativeTextSelectionOutsideTable() {
+  const selection = window.getSelection();
+  if (!selection || selection.isCollapsed || selection.toString().trim() === "") return false;
+  const node = selection.anchorNode;
+  const element = node && node.nodeType === Node.ELEMENT_NODE ? node : node && node.parentElement;
+  return !(element && element.closest(".tabulator"));
+}
+
+/**
+ * `navigator.clipboard` n'existe que dans un contexte securise (https, localhost).
+ * Sur une page servie en http depuis une IP de reseau local, il faut retomber
+ * sur `document.execCommand("copy")`, sinon la copie echoue silencieusement.
+ */
+function writeClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  }
+
+  return new Promise((resolve, reject) => {
+    const scratch = document.createElement("textarea");
+    scratch.value = text;
+    scratch.setAttribute("readonly", "");
+    scratch.style.cssText = "position:fixed;top:-1000px;opacity:0;";
+    document.body.appendChild(scratch);
+    scratch.select();
+    try {
+      if (document.execCommand("copy")) resolve();
+      else reject(new Error("execCommand copy refuse"));
+    } catch (err) {
+      reject(err);
+    } finally {
+      scratch.remove();
+    }
+  });
+}
+
 function coerce(field, raw) {
   if (NUMERIC_FIELDS.has(field)) {
     const n = Number(String(raw).replace(/[^\d.-]/g, ""));
@@ -27,8 +84,7 @@ function copyActiveRange(table) {
     .map((row) => Object.values(row).map((v) => (v === null || v === undefined ? "" : v)).join("\t"))
     .join("\n");
 
-  navigator.clipboard
-    .writeText(tsv)
+  writeClipboard(tsv)
     .then(() => showToast(`${rangesData[0].length} ligne(s) copiee(s)`, "success"))
     .catch(() => showToast("Impossible de copier dans le presse-papiers", "error"));
 
@@ -82,8 +138,9 @@ export function setupRangeClipboard(getActiveTable) {
   // qui ne se declenche que s'il existe une selection de texte native (absente ici, la selection
   // de plage Tabulator est une selection logique sur des <div>, pas une selection de texte DOM).
   document.addEventListener("keydown", (e) => {
-    const isCopy = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c";
+    const isCopy = (e.ctrlKey || e.metaKey) && (e.key || "").toLowerCase() === "c";
     if (!isCopy) return;
+    if (isTextEntryTarget(e.target) || hasNativeTextSelectionOutsideTable()) return;
 
     const table = getActiveTable();
     if (!table || isEditingCell(table)) return;
@@ -91,6 +148,8 @@ export function setupRangeClipboard(getActiveTable) {
   });
 
   document.addEventListener("paste", (e) => {
+    if (isTextEntryTarget(e.target)) return;
+
     const table = getActiveTable();
     if (!table || isEditingCell(table)) return;
     const text = e.clipboardData ? e.clipboardData.getData("text/plain") : "";

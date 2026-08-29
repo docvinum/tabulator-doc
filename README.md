@@ -122,15 +122,21 @@ configurable dans `js/constants.js` / `src/lib/constants.js`).
   `sort[0][field]`/`sort[0][dir]`, format natif Tabulator).
 - **Recherche globale** : champ de recherche par table, cote client (`table.setFilter`) ou
   cote serveur (parametre `q`, recherche sur prenom/nom/email/departement/poste/ville/pays/statut).
-- **Recherche/filtre par colonne** : `headerFilter` texte (contient), nombre (`>=`), date (`>=`).
+- **Recherche/filtre par colonne** : filtres d'en-tete sur mesure (`headerFilters.js`) —
+  texte (contient), nombre (`>=`), date (`>=`), chacun avec un bouton d'effacement.
 - **Filtrage par liste de valeurs distinctes** : colonnes categorielles (departement, ville, pays,
-  statut) avec `headerFilter: "list"` multiselect, valeurs chargees depuis
-  `GET /distinct/{field}` (ou calculees cote client pour la source JSON).
+  statut) avec une liste multi-selection — clic simple pour choisir une valeur et refermer,
+  `Maj`/`Ctrl` + clic pour en cumuler plusieurs sans refermer ; le champ affiche la valeur
+  choisie, ou un compteur et la liste des valeurs au-dela d'une. Les valeurs proviennent de
+  `GET /distinct/{field}` (ou sont calculees cote client pour la source JSON) et le filtre est
+  envoye tel quel au serveur (`filter[0][type]=in`) pour la source SQLite.
 - **Glisser-deposer des colonnes**, **masquage/affichage** (menu dedie), **redimensionnement**
   (natifs Tabulator : `movableColumns`, menu colonnes personnalise, `resizableColumns`).
 - **Selection de cellules** (module `selectableRange`, Excel-like), **copier** (`Ctrl+C` via
-  l'API Clipboard), **coller dans une plage de cellules editables** (`Ctrl+V`, avec repetition
-  d'une valeur unique sur toute la plage ou collage ligne/colonne).
+  l'API Clipboard, avec repli `execCommand` hors contexte securise), **coller dans une plage de
+  cellules editables** (`Ctrl+V`, avec repetition d'une valeur unique sur toute la plage ou
+  collage ligne/colonne). Les zones de saisie (recherche globale, filtres d'en-tete, editeur de
+  cellule) gardent le copier/coller natif du navigateur.
 - **Edition directe** : double-clic ou selection + `Entree` (le glisser-selection de plage
   n'ouvre pas l'editeur par accident — voir `editTriggerEvent: "dblclick"`).
 - **Validation** : cote client (validators Tabulator, retour visuel immediat) **et** cote
@@ -151,9 +157,13 @@ configurable dans `js/constants.js` / `src/lib/constants.js`).
 - Le format des requetes remote (`page`, `size`, `sort[0][field]`, `filter[0][type]`, etc.) suit
   exactement la convention native de Tabulator ; le backend les parse et les traduit en SQL
   parametre (whitelist de colonnes, jamais d'interpolation directe de nom de champ).
-- Les modules `columns.js`, `persistence.js`, `rangeClipboard.js`, `constants.js` sont partages
-  (quasi identiques) entre la demo vanilla (`demo-vanilla/js/`) et l'app Vue (`app-vue/src/lib/`),
-  pour eviter toute divergence de comportement entre les deux implementations.
+- Le backend Python est optionnel : les deux frontends sondent `GET /api/health` avant de
+  construire les tables "API" et "SQLite". Sans backend (demo hebergee sur GitHub Pages), un
+  bandeau d'explication remplace la table au lieu d'une cascade d'erreurs en console.
+- Les modules `columns.js`, `headerFilters.js`, `persistence.js`, `rangeClipboard.js` et
+  `constants.js` sont identiques entre la demo vanilla (`demo-vanilla/js/`) et l'app Vue
+  (`app-vue/src/lib/`), pour eviter toute divergence de comportement entre les deux
+  implementations.
 
 ## Claude Code skill
 

@@ -7,6 +7,7 @@ import { setupRangeClipboard } from "./lib/rangeClipboard.js";
 
 const activeTab = ref("json");
 const tables = {};
+const backendDown = ref(false);
 
 function toggleTheme() {
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -55,6 +56,21 @@ async function loadApi() {
   ready.api = true;
 }
 
+/**
+ * Le backend Python est optionnel. On le sonde une seule fois avant de
+ * construire les tables "API" et "SQLite" : sans cela, Tabulator tente le
+ * chargement ajax et journalise lui-meme "Ajax Load Error" / "Data Load Error",
+ * en plus des appels /distinct qui echouent chacun de leur cote.
+ */
+async function backendReachable() {
+  try {
+    const res = await fetch(`${API_BASE}/api/health`, { cache: "no-store" });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 async function loadSqliteDistinct() {
   const [department, city, country, status] = await Promise.all([
     distinctFromApi(sqliteUrl, "department"),
@@ -66,11 +82,29 @@ async function loadSqliteDistinct() {
   ready.sqlite = true;
 }
 
-onMounted(() => {
+onMounted(async () => {
   setupRangeClipboard(() => tables[activeTab.value]);
-  Promise.all([loadJson(), loadApi(), loadSqliteDistinct()]).catch((err) => {
-    console.error(err);
-  });
+
+  // La source JSON est purement cliente : son echec est une vraie erreur.
+  const jsonReady = loadJson().catch((err) => console.error(err));
+
+  if (await backendReachable()) {
+    await Promise.all([
+      loadApi().catch((err) => {
+        console.warn("API table init failed:", err);
+        backendDown.value = true;
+      }),
+      loadSqliteDistinct().catch((err) => {
+        console.warn("SQLite table init failed:", err);
+        backendDown.value = true;
+      }),
+    ]);
+  } else {
+    // Pas de backend en cours d'execution : on affiche le bandeau d'explication.
+    backendDown.value = true;
+  }
+
+  await jsonReady;
 });
 </script>
 
@@ -110,6 +144,10 @@ onMounted(() => {
     </section>
 
     <section v-show="activeTab === 'api'">
+      <p v-if="backendDown" class="backend-note">
+        Cet onglet necessite le backend Python en cours d'execution&nbsp;: voir le
+        <a href="https://github.com/docvinum/tabulator-doc#readme">README</a> pour le lancer en local.
+      </p>
       <DataTable
         v-if="ready.api"
         mode="local"
@@ -127,6 +165,10 @@ onMounted(() => {
     </section>
 
     <section v-show="activeTab === 'sqlite'">
+      <p v-if="backendDown" class="backend-note">
+        Cet onglet necessite le backend Python en cours d'execution&nbsp;: voir le
+        <a href="https://github.com/docvinum/tabulator-doc#readme">README</a> pour le lancer en local.
+      </p>
       <DataTable
         v-if="ready.sqlite"
         mode="remote"
@@ -135,6 +177,7 @@ onMounted(() => {
         :distinct="sqliteDistinct"
         source-label="SQLite"
         @ready="(t) => registerTable('sqlite', t)"
+        @load-error="backendDown = true"
       >
         <template #note>
           Source : <code>GET/PATCH /api/employees</code> (table SQLite, 5000 lignes). Tri, filtres, recherche globale
@@ -169,6 +212,29 @@ body {
 }
 .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 main { padding: 20px 32px 40px; }
+
+.backend-note {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #92400e;
+  margin: 0 0 12px;
+}
+.backend-note a { color: inherit; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .backend-note {
+    background: #2b2410;
+    border-color: #5b4708;
+    color: #fcd34d;
+  }
+}
+:root[data-theme="dark"] .backend-note {
+  background: #2b2410;
+  border-color: #5b4708;
+  color: #fcd34d;
+}
 
 .cell-flash-pending { background: #fef9c3 !important; }
 .cell-flash-success { animation: flashSuccess 1.1s ease-out; }

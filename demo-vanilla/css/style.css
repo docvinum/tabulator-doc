@@ -171,19 +171,6 @@ main { padding: 20px 32px 40px; }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .source-note {
-    background: #1a1f36;
-    border-color: #3730a3;
-    color: #c7d2fe;
-  }
-}
-:root[data-theme="dark"] .source-note {
-  background: #1a1f36;
-  border-color: #3730a3;
-  color: #c7d2fe;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .source-note {
     background: #171f3a;
     border-color: #2f3d6b;
     color: #c7d2fe;

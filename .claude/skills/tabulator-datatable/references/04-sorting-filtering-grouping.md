@@ -41,6 +41,27 @@ For sorting done server-side instead of in the browser, see `09-server-side-inte
 ```
 Types: `"input"`, `"number"`, `"list"` (needs `values` in `headerFilterParams`), `"tickCross"`. Default match is "contains" for text, "=" otherwise — override with `headerFilterFunc`.
 
+### Multiselect list filter (custom editor)
+
+`headerFilter: "list"` with `headerFilterParams: { multiselect: true }` has weak UX — every click toggles a value, the dropdown never auto-closes, and the input just shows raw values comma-joined (no "3 selected" summary). For real multiselect UX, write a custom header filter: a function matching the editor signature, returning a node with a `value` get/set (`Object.defineProperty`) that the Filter module reads:
+
+```js
+function multiselectFilter(cell, onRendered, success, cancel, params) {
+  const wrap = document.createElement("div");
+  wrap.addEventListener("mousedown", (e) => e.stopPropagation()); // see 11-pitfalls #12
+  let selected = [];
+  // ...build a button/popup over params.values, toggle `selected` on click, success(selected)...
+  Object.defineProperty(wrap, "value", {
+    get: () => (selected.length ? selected.slice() : ""),
+    set: (v) => { selected = Array.isArray(v) ? v : []; },
+  });
+  return wrap;
+}
+{ title: "Status", field: "status", headerFilter: multiselectFilter,
+  headerFilterParams: { values: ["active", "paused", "closed"] }, headerFilterFunc: "in" }
+```
+`headerFilterFunc: "in"` expects an array value; return `""` (not `[]`) when nothing is selected so Tabulator treats the filter as cleared.
+
 ### Programmatic / external filters
 
 For filter UI built outside the table:

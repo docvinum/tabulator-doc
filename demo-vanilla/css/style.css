@@ -388,7 +388,7 @@ main { padding: 20px 32px 40px; }
   font-size: 11.5px;
   letter-spacing: .01em;
 }
-.tabulator .tabulator-page-size {
+.tabulator .tabulator-footer .tabulator-page-size {
   height: 27px;
   padding: 0 6px;
   border: 1px solid var(--table-border);
@@ -397,7 +397,7 @@ main { padding: 20px 32px 40px; }
   color: var(--header-text);
   font-size: 12px;
 }
-.tabulator .tabulator-page {
+.tabulator .tabulator-footer .tabulator-page {
   min-width: 27px;
   height: 27px;
   padding: 0 8px;
@@ -412,7 +412,7 @@ main { padding: 20px 32px 40px; }
 @media (hover: hover) and (pointer: fine) {
   .tabulator .tabulator-page:not(:disabled):not(.active):hover { background: var(--surface-tint); }
 }
-.tabulator .tabulator-page.active {
+.tabulator .tabulator-footer .tabulator-page.active {
   background: var(--pager-active-bg);
   border-color: var(--pager-active-border);
   color: var(--pager-active-text);

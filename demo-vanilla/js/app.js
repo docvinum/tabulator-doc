@@ -184,6 +184,11 @@ async function initSqliteTable() {
   });
   table.sqliteSearch = "";
 
+  // En mode remote, l'echec du chargement ajax ne rejette pas cette fonction :
+  // Tabulator le signale via l'evenement dataLoadError. C'est le seul point ou
+  // l'absence de backend devient observable pour cette source.
+  table.on("dataLoadError", () => revealBackendNote("sqlite"));
+
   attachPersistence(table, { baseUrl, sourceLabel: "SQLite" });
   tables.sqlite = table;
   wireToolbar("sqlite", table);

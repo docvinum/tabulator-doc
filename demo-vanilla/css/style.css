@@ -164,6 +164,20 @@ main { padding: 20px 32px 40px; }
   color: #3730a3;
   margin: 0 0 12px;
 }
+.source-note a { color: inherit; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .source-note {
+    background: #1a1f36;
+    border-color: #3730a3;
+    color: #c7d2fe;
+  }
+}
+:root[data-theme="dark"] .source-note {
+  background: #1a1f36;
+  border-color: #3730a3;
+  color: #c7d2fe;
+}
 
 .backend-note {
   background: #fffbeb;

@@ -55,6 +55,11 @@
         Source : <code>GET/PATCH /api/employees-api</code> (jeu de donnees en memoire cote serveur, 200 lignes).
         Lecture et ecriture passent par l'API ; tri/recherche/filtres restent cote client (petit volume).
       </p>
+      <p class="backend-note" data-backend-note hidden>
+        Cet onglet necessite le backend Python en cours d'execution&nbsp;: il ne fonctionne pas sur la demo
+        hebergee (GitHub Pages). Voir le <a href="https://github.com/docvinum/tabulator-doc#readme">README</a>
+        pour lancer le backend en local.
+      </p>
       <div class="toolbar">
         <input type="search" class="global-search" data-target="api" placeholder="Recherche globale..." />
         <button class="col-vis-btn" data-target="api">Colonnes</button>
@@ -67,6 +72,11 @@
       <p class="source-note">
         Source : <code>GET/PATCH /api/employees</code> (table SQLite, 5000 lignes). Tri, filtres, recherche globale
         et pagination sont tous evalues cote serveur pour rester performant sur un gros volume.
+      </p>
+      <p class="backend-note" data-backend-note hidden>
+        Cet onglet necessite le backend Python en cours d'execution&nbsp;: il ne fonctionne pas sur la demo
+        hebergee (GitHub Pages). Voir le <a href="https://github.com/docvinum/tabulator-doc#readme">README</a>
+        pour lancer le backend en local.
       </p>
       <div class="toolbar">
         <input type="search" class="global-search" data-target="sqlite" placeholder="Recherche globale (serveur)..." />

@@ -189,11 +189,29 @@ async function initSqliteTable() {
   wireToolbar("sqlite", table);
 }
 
+function revealBackendNote(panelKey) {
+  const note = document.querySelector(`#panel-${panelKey} [data-backend-note]`);
+  if (note) note.hidden = false;
+}
+
 wireThemeToggle();
 wireTabs();
 setupRangeClipboard(() => tables[activeTabKey]);
 
-Promise.all([initJsonTable(), initApiTable(), initSqliteTable()]).catch((err) => {
+// La source JSON est purement cliente : son echec est une vraie erreur.
+initJsonTable().catch((err) => {
   console.error(err);
-  showToast(`Erreur d'initialisation: ${err.message}`, "error");
+  showToast(`Erreur d'initialisation (JSON local): ${err.message}`, "error");
+});
+
+// Les sources API et SQLite dependent du backend Python. Quand il est absent
+// (ex. demo hebergee sur GitHub Pages), on affiche le bandeau d'explication
+// au lieu d'un toast d'erreur bloquant.
+initApiTable().catch((err) => {
+  console.error("API table init failed:", err);
+  revealBackendNote("api");
+});
+initSqliteTable().catch((err) => {
+  console.error("SQLite table init failed:", err);
+  revealBackendNote("sqlite");
 });

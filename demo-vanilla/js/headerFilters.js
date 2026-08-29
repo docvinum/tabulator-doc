@@ -420,3 +420,81 @@ export function listHeaderFilter(cell, onRendered, success, cancel, params = {})
   render();
   return wrap;
 }
+
+/* ------------------------------------------------------------------ */
+/* Filtre booleen tristate (Manager) : meme badge que les cellules      */
+/* ------------------------------------------------------------------ */
+
+// Glyphes repris tels quels du formateur "tickCross" natif de Tabulator, pour
+// que le badge du filtre soit visuellement identique a celui des cellules
+// (memes classes tabulator-tick/tabulator-cross, meme tracé) plutot qu'une
+// approximation dessinee en CSS.
+const TICK_SVG =
+  '<svg viewBox="0 0 24 24"><path class="tabulator-tick" fill-rule="evenodd" clip-rule="evenodd" d="M21.652,3.211c-0.293-0.295-0.77-0.295-1.061,0L9.41,14.34c-0.293,0.297-0.771,0.297-1.062,0L3.449,9.351C3.304,9.203,3.114,9.13,2.923,9.129C2.73,9.128,2.534,9.201,2.387,9.351l-2.165,1.946C0.078,11.445,0,11.63,0,11.823c0,0.194,0.078,0.397,0.223,0.544l4.94,5.184c0.292,0.296,0.771,0.776,1.062,1.07l2.124,2.141c0.292,0.293,0.769,0.293,1.062,0l14.366-14.34c0.293-0.294,0.293-0.777,0-1.071L21.652,3.211z"/></svg>';
+const CROSS_SVG =
+  '<svg viewBox="0 0 24 24"><path class="tabulator-cross" d="M22.245,4.015c0.313,0.313,0.313,0.826,0,1.139l-6.276,6.27c-0.313,0.312-0.313,0.826,0,1.14l6.273,6.272c0.313,0.313,0.313,0.826,0,1.14l-2.285,2.277c-0.314,0.312-0.828,0.312-1.142,0l-6.271-6.271c-0.313-0.313-0.828-0.313-1.141,0l-6.276,6.267c-0.313,0.313-0.828,0.313-1.141,0l-2.282-2.28c-0.313-0.313-0.313-0.826,0-1.14l6.278-6.269c0.313-0.312,0.313-0.826,0-1.14L1.709,5.147c-0.314-0.313-0.314-0.827,0-1.14l2.284-2.278C4.308,1.417,4.821,1.417,5.135,1.73L11.405,8c0.314,0.314,0.828,0.314,1.141,0.001l6.276-6.267c0.312-0.312,0.826-0.312,1.141,0L22.245,4.015z"/></svg>';
+
+// L'ordre reproduit le cycle de l'editeur tickCross natif de Tabulator :
+// indetermine (pas de filtre) -> coche -> decoche -> indetermine...
+const BOOL_STATES = [
+  { value: "", label: "Tous", cls: "is-neutral" },
+  { value: true, label: "Oui", cls: "is-true" },
+  { value: false, label: "Non", cls: "is-false" },
+];
+
+/**
+ * Filtre d'en-tete tristate pour une colonne booleenne (ex. `is_manager`).
+ * Le badge reprend exactement le style des cellules formatees en
+ * "tickCross" : disque plein vert pour "oui", anneau gris pour "non" (voir
+ * la regle CSS `.tabulator-cell[tabulator-field="..."][aria-checked]`) ;
+ * l'etat neutre ("Tous") est un cercle vide pour rester visuellement
+ * distinct des deux autres. A utiliser avec `headerFilterEmptyCheck: (v) =>
+ * v !== true && v !== false` (Tabulator applique ce garde-fou lui-meme pour
+ * la chaine `"tickCross"`, mais pas pour un editeur fourni en fonction --
+ * sans lui, la valeur `false`, falsy, serait a tort traitee comme "filtre
+ * vide" par le detecteur par defaut).
+ */
+export function booleanHeaderFilter(cell, onRendered, success, cancel, params = {}) {
+  const def = cell.getColumn().getDefinition();
+  const initial = cell.getValue();
+  let stateIndex = BOOL_STATES.findIndex((s) => s.value === initial);
+  if (stateIndex === -1) stateIndex = 0;
+
+  const wrap = makeShell("thf-bool");
+  const field = el("button", "thf-bool-field");
+  field.type = "button";
+  field.setAttribute("aria-label", `Filtrer la colonne ${def.title}`);
+
+  const badge = el("span", "thf-bool-badge");
+  field.appendChild(badge);
+  wrap.appendChild(field);
+
+  function render() {
+    const state = BOOL_STATES[stateIndex];
+    badge.className = `thf-bool-badge ${state.cls}`;
+    badge.innerHTML = state.value === true ? TICK_SVG : state.value === false ? CROSS_SVG : "";
+    field.title = `${def.title} : ${state.label} (cliquer pour changer)`;
+    wrap.classList.toggle("is-active", state.value !== "");
+  }
+
+  field.addEventListener("click", (e) => {
+    e.stopPropagation();
+    stateIndex = (stateIndex + 1) % BOOL_STATES.length;
+    render();
+    success(BOOL_STATES[stateIndex].value);
+  });
+
+  definePassthroughValue(
+    wrap,
+    () => BOOL_STATES[stateIndex].value,
+    (v) => {
+      const idx = BOOL_STATES.findIndex((s) => s.value === v);
+      stateIndex = idx === -1 ? 0 : idx;
+      render();
+    }
+  );
+  wrap.focus = () => field.focus();
+
+  render();
+  return wrap;
+}

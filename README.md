@@ -149,6 +149,12 @@ configurable dans `js/constants.js` / `src/lib/constants.js`).
 - **Theme clair/sombre** : bouton de bascule (persiste via `localStorage`), suit
   `prefers-color-scheme` par defaut, systeme de tokens CSS partage entre les deux frontends —
   header en micro-caps teinte, grille hairline, police monospace sur les colonnes numeriques/date.
+- **Cases a cocher uniformes** : le rendu natif du navigateur (menu de colonnes, edition et
+  filtre tristate de la colonne "Manager") est remplace par un carre a cocher CSS aux memes
+  couleurs que la liste de filtre multi-selection, pour une apparence coherente partout.
+- **Valeurs booleennes lisibles** : la colonne "Manager" affiche un badge rond plein et vert
+  pour "oui", un anneau gris pour "non" — plus facile a distinguer en survolant la colonne que
+  deux icones de la meme couleur.
 
 ### Notes techniques
 

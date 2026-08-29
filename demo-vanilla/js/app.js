@@ -88,6 +88,18 @@ function wireToolbar(key, table) {
   table.on("tableBuilt", () => buildColumnVisibilityMenu(table, visMenu));
 }
 
+function wireThemeToggle() {
+  const btn = document.getElementById("theme-toggle");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const current = document.documentElement.getAttribute("data-theme") || (prefersDark ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
+  });
+}
+
 function wireTabs() {
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -177,6 +189,7 @@ async function initSqliteTable() {
   wireToolbar("sqlite", table);
 }
 
+wireThemeToggle();
 wireTabs();
 setupRangeClipboard(() => tables[activeTabKey]);
 

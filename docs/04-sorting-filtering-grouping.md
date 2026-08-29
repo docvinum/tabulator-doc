@@ -54,6 +54,30 @@ Common `headerFilter` types: `"input"` (text), `"number"`, `"list"` (dropdown, n
 
 By default header filters use a "like/contains" match for text and "=" for others. Override with `headerFilterFunc`, or set the comparison via `headerFilterFuncParams`.
 
+### Multiselect list filter (custom editor)
+
+The built-in `headerFilter: "list"` with `headerFilterParams: { multiselect: true }` has real UX limits: every click toggles a value and the dropdown never closes on its own, and the input just shows the raw selected values joined by commas — nothing indicates "3 selected" versus a single readable value. If a genuine multiselect (pick one and close, hold a modifier key to pick several) matters, write a custom header filter instead of the built-in editor. A header filter is any function matching the editor signature that returns a DOM node whose `value` property (a getter/setter, via `Object.defineProperty`) the Filter module reads:
+
+```js
+function multiselectFilter(cell, onRendered, success, cancel, params) {
+  const wrap = document.createElement("div");
+  wrap.addEventListener("mousedown", (e) => e.stopPropagation()); // see 11-pitfalls #12
+  let selected = [];
+  // ...build a button that opens a popup listing params.values, toggle `selected`
+  // on click, call success(selected) to push the filter value...
+  Object.defineProperty(wrap, "value", {
+    get: () => (selected.length ? selected.slice() : ""),
+    set: (v) => { selected = Array.isArray(v) ? v : []; },
+  });
+  return wrap;
+}
+
+{ title: "Status", field: "status", headerFilter: multiselectFilter,
+  headerFilterParams: { values: ["active", "paused", "closed"] }, headerFilterFunc: "in" }
+```
+
+`headerFilterFunc: "in"` expects the value to be an array and matches rows whose field value is a member of it — return `""` (not `[]`) when nothing is selected, so Tabulator treats the filter as cleared rather than "match nothing".
+
 ### External / programmatic filters
 
 For filter UI you build yourself (buttons, a search box outside the table, etc.):

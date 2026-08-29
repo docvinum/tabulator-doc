@@ -1,13 +1,90 @@
 :root {
   color-scheme: light;
+
   --bg: #f7f8fa;
   --surface: #ffffff;
+  --table-surface: #ffffff;
+  --surface-tint: #f2f4f7;
+  --input-surface: #ffffff;
   --border: #d9dde3;
+  --table-border: #e3e6ec;
+  --grid-line-header: #e6e9ee;
+  --grid-line-row: #edeff3;
+  --grid-line-cell: #f0f2f5;
   --text: #1f2430;
   --muted: #6b7280;
+  --header-text: #5b6474;
+  --cell-muted: #9aa2b1;
+  --cell-muted-2: #6d7686;
+  --placeholder: #9aa2b1;
   --accent: #2563eb;
+  --sort-inactive: #c3c9d3;
+  --pager-active-bg: #2563eb;
+  --pager-active-border: #2563eb;
+  --pager-active-text: #ffffff;
+  --icon-muted: #8b93a1;
+  --row-hover: #f8fafc;
   --success: #16a34a;
   --error: #dc2626;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: #0f1115;
+    --surface: #171a20;
+    --table-surface: #14171c;
+    --surface-tint: #1c2027;
+    --input-surface: #101318;
+    --border: #2b313a;
+    --table-border: #262b33;
+    --grid-line-header: #262b33;
+    --grid-line-row: #1f242b;
+    --grid-line-cell: #1f242b;
+    --text: #e6e9ef;
+    --muted: #9aa5b4;
+    --header-text: #98a1b0;
+    --cell-muted: #5f6877;
+    --cell-muted-2: #8a93a2;
+    --placeholder: #5f6877;
+    --accent: #6ea1ff;
+    --sort-inactive: #4a525f;
+    --pager-active-bg: #2b4b8f;
+    --pager-active-border: #3f6fd0;
+    --pager-active-text: #eaf1ff;
+    --icon-muted: #6f7887;
+    --row-hover: #191d24;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0f1115;
+  --surface: #171a20;
+  --table-surface: #14171c;
+  --surface-tint: #1c2027;
+  --input-surface: #101318;
+  --border: #2b313a;
+  --table-border: #262b33;
+  --grid-line-header: #262b33;
+  --grid-line-row: #1f242b;
+  --grid-line-cell: #1f242b;
+  --text: #e6e9ef;
+  --muted: #9aa5b4;
+  --header-text: #98a1b0;
+  --cell-muted: #5f6877;
+  --cell-muted-2: #8a93a2;
+  --placeholder: #5f6877;
+  --accent: #6ea1ff;
+  --sort-inactive: #4a525f;
+  --pager-active-bg: #2b4b8f;
+  --pager-active-border: #3f6fd0;
+  --pager-active-text: #eaf1ff;
+  --icon-muted: #6f7887;
+  --row-hover: #191d24;
 }
 
 * { box-sizing: border-box; }
@@ -20,10 +97,37 @@ body {
 }
 
 .app-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   padding: 24px 32px 8px;
 }
 .app-header h1 { margin: 0 0 4px; font-size: 22px; }
 .app-header p { margin: 0; color: var(--muted); }
+
+.theme-toggle {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+.theme-toggle:hover { background: var(--surface-tint); }
+.theme-toggle-icon::before { content: "\2600"; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-toggle-icon::before { content: "\263E"; }
+}
+:root[data-theme="dark"] .theme-toggle-icon::before { content: "\263E"; }
 
 .tabs {
   display: flex;
@@ -70,21 +174,30 @@ main { padding: 20px 32px 40px; }
 }
 .global-search {
   flex: 0 0 280px;
-  padding: 7px 10px;
+  padding: 8px 11px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 7px;
   font-size: 13px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: inset 0 1px 2px rgba(16, 24, 40, .04);
+  outline: none;
 }
 .col-vis-btn {
-  padding: 7px 12px;
+  padding: 8px 13px;
   border: 1px solid var(--border);
   background: var(--surface);
-  border-radius: 6px;
+  border-radius: 7px;
   cursor: pointer;
   font-size: 13px;
+  font-family: inherit;
+  color: var(--header-text);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
 }
-.col-vis-btn:hover { background: #f1f3f5; }
+.col-vis-btn:hover { background: var(--surface-tint); }
 
+.col-vis-menu[hidden] { display: none; }
 .col-vis-menu {
   position: absolute;
   top: 38px;
@@ -107,6 +220,185 @@ main { padding: 20px 32px 40px; }
   align-items: center;
   gap: 6px;
   white-space: nowrap;
+  color: var(--text);
+}
+
+/* ---- Tabulator datagrid restyle: tinted micro-caps header, full hairline
+   grid, comfortable rows, JetBrains Mono on numeric/date columns. Selectors
+   target Tabulator's own runtime classes/attributes (tabulator-field is set
+   by Tabulator on every header + cell, see Column.js/Cell.js) so this stays
+   a pure CSS drop-in with no column-definition changes. ---- */
+.tabulator {
+  border: 1px solid var(--table-border);
+  border-radius: 10px;
+  background: var(--table-surface);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.tabulator .tabulator-header {
+  background: var(--surface-tint);
+  border-bottom: 1px solid var(--table-border);
+  color: var(--header-text);
+}
+.tabulator .tabulator-header .tabulator-col {
+  background: var(--surface-tint);
+  border-right: 1px solid var(--grid-line-header);
+}
+.tabulator .tabulator-header .tabulator-col-content { padding: 9px 10px 8px; }
+.tabulator .tabulator-col-title {
+  font: 600 10.5px/1.2 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.tabulator .tabulator-col.tabulator-sortable .tabulator-col-sorter .tabulator-arrow {
+  border-bottom-color: var(--sort-inactive);
+}
+.tabulator .tabulator-col.tabulator-sortable[aria-sort="ascending"] .tabulator-col-sorter .tabulator-arrow,
+.tabulator .tabulator-col.tabulator-sortable[aria-sort="descending"] .tabulator-col-sorter .tabulator-arrow {
+  border-top-color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.tabulator .tabulator-header .tabulator-col.tabulator-range-highlight {
+  background-color: var(--surface-tint);
+  color: var(--header-text);
+}
+.tabulator .tabulator-header .tabulator-col.tabulator-range-selected {
+  background-color: var(--pager-active-bg);
+  color: var(--pager-active-text);
+}
+.tabulator .tabulator-range-overlay .tabulator-range,
+.tabulator .tabulator-range-overlay .tabulator-range-cell-active {
+  border-color: var(--accent);
+}
+.tabulator .tabulator-range-overlay .tabulator-range.tabulator-range-active::after {
+  background-color: var(--accent);
+}
+
+.tabulator .tabulator-header-filter { margin-top: 6px; }
+.tabulator input,
+.tabulator select,
+.tabulator textarea {
+  font-family: inherit;
+  color: inherit;
+}
+.tabulator .tabulator-header-filter input,
+.tabulator .tabulator-header-filter select {
+  width: 100%;
+  box-sizing: border-box;
+  height: 26px;
+  padding: 0 7px;
+  border: 1px solid var(--table-border);
+  border-radius: 5px;
+  background: var(--input-surface);
+  font-size: 11.5px;
+}
+.tabulator .tabulator-header-filter input::placeholder { color: var(--placeholder); }
+.tabulator .tabulator-col[tabulator-field="salary"] .tabulator-header-filter input,
+.tabulator .tabulator-col[tabulator-field="hire_date"] .tabulator-header-filter input,
+.tabulator .tabulator-col[tabulator-field="rating"] .tabulator-header-filter input {
+  font-family: var(--font-mono);
+}
+.tabulator .tabulator-col[tabulator-field="salary"] .tabulator-header-filter input { text-align: right; }
+.tabulator .tabulator-col[tabulator-field="rating"] .tabulator-header-filter input { text-align: center; }
+
+.tabulator .tabulator-row {
+  background: var(--table-surface);
+  border-bottom: 1px solid var(--grid-line-row);
+  color: var(--text);
+}
+.tabulator .tabulator-row.tabulator-row-even { background: var(--table-surface); }
+@media (hover: hover) and (pointer: fine) {
+  .tabulator .tabulator-row.tabulator-selectable:hover { background: var(--row-hover); }
+}
+.tabulator .tabulator-cell {
+  padding: 9px 10px;
+  border-right: 1px solid var(--grid-line-cell);
+  font-size: 13px;
+  line-height: 1.35;
+}
+.tabulator .tabulator-cell .tabulator-tick,
+.tabulator .tabulator-cell .tabulator-cross { fill: var(--icon-muted); }
+.tabulator .tabulator-cell.tabulator-editing { border-color: var(--accent); }
+.tabulator .tabulator-cell.tabulator-validation-fail { border-color: var(--error); }
+.tabulator .tabulator-cell.tabulator-validation-fail input,
+.tabulator .tabulator-cell.tabulator-validation-fail select { color: var(--error); }
+
+.tabulator-row .tabulator-cell[tabulator-field="id"],
+.tabulator-row .tabulator-cell[tabulator-field="salary"],
+.tabulator-row .tabulator-cell[tabulator-field="hire_date"],
+.tabulator-row .tabulator-cell[tabulator-field="rating"] {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.tabulator-row .tabulator-cell[tabulator-field="id"] { font-size: 12px; color: var(--cell-muted); }
+.tabulator-row .tabulator-cell[tabulator-field="salary"] { font-size: 12.5px; }
+.tabulator-row .tabulator-cell[tabulator-field="hire_date"] { font-size: 12.5px; color: var(--cell-muted-2); }
+.tabulator-row .tabulator-cell[tabulator-field="rating"] { font-size: 12.5px; font-weight: 500; }
+.tabulator-row .tabulator-cell[tabulator-field="email"] { color: var(--cell-muted-2); }
+
+.tabulator .tabulator-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--table-border);
+  color: var(--cell-muted);
+}
+.tabulator .tabulator-footer-contents { padding: 9px 12px; }
+.tabulator .tabulator-page-counter {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: .01em;
+}
+.tabulator .tabulator-page-size {
+  height: 27px;
+  padding: 0 6px;
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  background: var(--input-surface);
+  color: var(--header-text);
+  font-size: 12px;
+}
+.tabulator .tabulator-page {
+  min-width: 27px;
+  height: 27px;
+  padding: 0 8px;
+  margin: 0 3px 0 0;
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  background: var(--input-surface);
+  color: var(--header-text);
+  font-size: 12px;
+}
+.tabulator .tabulator-page:not([data-page]) { font-family: var(--font-mono); }
+@media (hover: hover) and (pointer: fine) {
+  .tabulator .tabulator-page:not(:disabled):not(.active):hover { background: var(--surface-tint); }
+}
+.tabulator .tabulator-page.active {
+  background: var(--pager-active-bg);
+  border-color: var(--pager-active-border);
+  color: var(--pager-active-text);
+  font-weight: 500;
+}
+.tabulator .tabulator-page:disabled { color: var(--placeholder); }
+
+.tabulator-popup-container {
+  background: var(--table-surface);
+  border: 1px solid var(--table-border);
+  color: var(--text);
+}
+.tabulator-edit-list-item,
+.tabulator-edit-list-placeholder,
+.tabulator-edit-list-group { color: var(--text); }
+.tabulator-edit-list-group { border-bottom-color: var(--table-border); }
+@media (hover: hover) and (pointer: fine) {
+  .tabulator-edit-list-item:hover {
+    background: var(--pager-active-bg);
+    color: var(--pager-active-text);
+  }
+}
+.tabulator-edit-list-item.active {
+  background: var(--pager-active-bg);
+  color: var(--pager-active-text);
 }
 
 /* Feedback visuel sur les cellules editees */

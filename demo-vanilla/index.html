@@ -4,13 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Demo Tabulator (JS vanilla)</title>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="node_modules/tabulator-tables/dist/css/tabulator.min.css" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <header class="app-header">
-    <h1>Demo Tabulator &mdash; JavaScript vanilla</h1>
-    <p>Trois sources de donnees, une seule bibliotheque : tri, recherche, filtres, edition et persistance.</p>
+    <div>
+      <h1>Demo Tabulator &mdash; JavaScript vanilla</h1>
+      <p>Trois sources de donnees, une seule bibliotheque : tri, recherche, filtres, edition et persistance.</p>
+    </div>
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Basculer entre theme clair et sombre" title="Basculer entre theme clair et sombre">
+      <span class="theme-toggle-icon" aria-hidden="true"></span>
+    </button>
   </header>
 
   <nav class="tabs" id="tabs">

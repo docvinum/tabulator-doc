@@ -137,27 +137,35 @@ onBeforeUnmount(() => {
   position: relative;
 }
 .global-search {
-  flex: 0 0 280px;
-  padding: 7px 10px;
-  border: 1px solid #d9dde3;
-  border-radius: 6px;
+  flex: 0 0 300px;
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
   font-size: 13px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: inset 0 1px 2px rgba(16, 24, 40, .04);
+  outline: none;
 }
 .col-vis-btn {
-  padding: 7px 12px;
-  border: 1px solid #d9dde3;
-  background: #fff;
-  border-radius: 6px;
+  padding: 8px 13px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 7px;
   cursor: pointer;
   font-size: 13px;
+  font-family: inherit;
+  color: var(--header-text);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
 }
-.col-vis-btn:hover { background: #f1f3f5; }
+.col-vis-btn:hover { background: var(--surface-tint); }
 .col-vis-menu {
   position: absolute;
   top: 38px;
   right: 0;
-  background: #fff;
-  border: 1px solid #d9dde3;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 6px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
   padding: 8px 12px;
@@ -174,5 +182,6 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 6px;
   white-space: nowrap;
+  color: var(--text);
 }
 </style>

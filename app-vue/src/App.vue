@@ -8,6 +8,14 @@ import { setupRangeClipboard } from "./lib/rangeClipboard.js";
 const activeTab = ref("json");
 const tables = {};
 
+function toggleTheme() {
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const current = document.documentElement.getAttribute("data-theme") || (prefersDark ? "dark" : "light");
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("theme", next);
+}
+
 const jsonData = ref([]);
 const jsonDistinct = reactive({});
 const apiData = ref([]);
@@ -68,8 +76,13 @@ onMounted(() => {
 
 <template>
   <header class="app-header">
-    <h1>Demo Tabulator &mdash; Vue 3</h1>
-    <p>Trois sources de donnees, un composant DataTable reutilisable.</p>
+    <div>
+      <h1>Demo Tabulator &mdash; Vue 3</h1>
+      <p>Trois sources de donnees, un composant DataTable reutilisable.</p>
+    </div>
+    <button type="button" class="theme-toggle" aria-label="Basculer entre theme clair et sombre" title="Basculer entre theme clair et sombre" @click="toggleTheme">
+      <span class="theme-toggle-icon" aria-hidden="true"></span>
+    </button>
   </header>
 
   <nav class="tabs">
@@ -135,23 +148,26 @@ onMounted(() => {
 </template>
 
 <style>
-:root { color-scheme: light; }
-* { box-sizing: border-box; }
 body {
-  margin: 0;
-  background: #f7f8fa;
-  color: #1f2430;
+  background: var(--bg);
+  color: var(--text);
   font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
-.app-header { padding: 24px 32px 8px; }
+.app-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 32px 8px;
+}
 .app-header h1 { margin: 0 0 4px; font-size: 22px; }
-.app-header p { margin: 0; color: #6b7280; }
-.tabs { display: flex; gap: 4px; padding: 0 32px; border-bottom: 1px solid #d9dde3; }
+.app-header p { margin: 0; color: var(--muted); }
+.tabs { display: flex; gap: 4px; padding: 0 32px; border-bottom: 1px solid var(--border); }
 .tab-btn {
   border: none; background: none; padding: 10px 16px; font-size: 14px;
-  cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent;
+  cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent;
 }
-.tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 600; }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 main { padding: 20px 32px 40px; }
 
 .cell-flash-pending { background: #fef9c3 !important; }
@@ -168,7 +184,7 @@ main { padding: 20px 32px 40px; }
   pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; max-width: 360px; z-index: 100;
 }
 .toast.visible { opacity: 1; transform: translateY(0); }
-.toast-success { background: #16a34a; }
-.toast-error { background: #dc2626; }
+.toast-success { background: var(--success); }
+.toast-error { background: var(--error); }
 .toast-info { background: #374151; }
 </style>

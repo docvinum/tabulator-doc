@@ -1,11 +1,9 @@
-import { API_BASE } from "./constants.js";
+import { API_BASE, SEARCHABLE_FIELDS } from "./constants.js";
 import { buildColumns } from "./columns.js";
 import { attachPersistence, showToast } from "./persistence.js";
 import { setupRangeClipboard } from "./rangeClipboard.js";
 
-const SEARCHABLE_FIELDS = [
-  "first_name", "last_name", "email", "department", "job_title", "city", "country", "status",
-];
+const REMOTE_SEARCH_DEBOUNCE = 300;
 
 const tables = {};
 let activeTabKey = "json";
@@ -19,6 +17,10 @@ const COMMON_OPTIONS = {
   // (SelectRange) ouvre accidentellement l'editeur sur la cellule de depart. L'edition
   // reste possible via double-clic ou via Entree (SelectRange appelle editCell() directement).
   editTriggerEvent: "dblclick",
+  // Avec selectableRangeColumns, un clic sur l'en-tete sert a la fois au tri et
+  // a la selection de colonne : Tabulator avertit en console et le resultat est
+  // ambigu. On restreint donc le tri au clic sur l'icone de tri.
+  headerSortClickElement: "icon",
   selectableRange: true,
   selectableRangeColumns: true,
   selectableRangeClearCells: true,
@@ -30,7 +32,7 @@ async function fetchJSON(url, opts) {
   return res.json();
 }
 
-async function distinctFrom(list, field) {
+function distinctFrom(list, field) {
   return [...new Set(list.map((r) => r[field]))].sort();
 }
 
@@ -41,6 +43,30 @@ async function distinctFromApi(baseUrl, field) {
     console.warn("distinct fetch failed", field, e);
     return [];
   }
+}
+
+/**
+ * Le backend Python est optionnel (la demo hebergee sur GitHub Pages n'en a pas).
+ * On le sonde une seule fois avant de construire les tables "API" et "SQLite" :
+ * sans cela, Tabulator tente le chargement ajax et journalise lui-meme
+ * "Ajax Load Error" / "Data Load Error" dans la console, en plus des quelque
+ * huit appels /distinct qui echouent chacun de leur cote.
+ */
+async function backendReachable() {
+  try {
+    const res = await fetch(`${API_BASE}/api/health`, { cache: "no-store" });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
 }
 
 function buildColumnVisibilityMenu(table, container) {
@@ -64,11 +90,18 @@ function wireToolbar(key, table) {
   const visBtn = document.querySelector(`.col-vis-btn[data-target="${key}"]`);
   const visMenu = document.querySelector(`.col-vis-menu[data-target="${key}"]`);
 
+  // En mode serveur, chaque frappe declencherait une requete : on temporise.
+  const runRemoteSearch = debounce(() => {
+    table.setPage(1).catch(() => {
+      /* echec de chargement deja signale par l'evenement dataLoadError */
+    });
+  }, REMOTE_SEARCH_DEBOUNCE);
+
   searchInput.addEventListener("input", () => {
     const term = searchInput.value.trim().toLowerCase();
     if (key === "sqlite") {
       table.sqliteSearch = term;
-      table.setPage(1);
+      runRemoteSearch();
     } else if (!term) {
       table.clearFilter();
     } else {
@@ -115,10 +148,10 @@ function wireTabs() {
 async function initJsonTable() {
   const data = await fetchJSON("data/employees.json");
   const distinct = {
-    department: await distinctFrom(data, "department"),
-    city: await distinctFrom(data, "city"),
-    country: await distinctFrom(data, "country"),
-    status: await distinctFrom(data, "status"),
+    department: distinctFrom(data, "department"),
+    city: distinctFrom(data, "city"),
+    country: distinctFrom(data, "country"),
+    status: distinctFrom(data, "status"),
   };
 
   const table = new Tabulator("#table-json", {
@@ -184,9 +217,8 @@ async function initSqliteTable() {
   });
   table.sqliteSearch = "";
 
-  // En mode remote, l'echec du chargement ajax ne rejette pas cette fonction :
-  // Tabulator le signale via l'evenement dataLoadError. C'est le seul point ou
-  // l'absence de backend devient observable pour cette source.
+  // Le backend a repondu au demarrage mais peut tomber ensuite : en mode remote,
+  // l'echec ajax ne rejette pas la construction, Tabulator le signale via cet evenement.
   table.on("dataLoadError", () => revealBackendNote("sqlite"));
 
   attachPersistence(table, { baseUrl, sourceLabel: "SQLite" });
@@ -199,24 +231,36 @@ function revealBackendNote(panelKey) {
   if (note) note.hidden = false;
 }
 
-wireThemeToggle();
-wireTabs();
-setupRangeClipboard(() => tables[activeTabKey]);
+async function main() {
+  wireThemeToggle();
+  wireTabs();
+  setupRangeClipboard(() => tables[activeTabKey]);
 
-// La source JSON est purement cliente : son echec est une vraie erreur.
-initJsonTable().catch((err) => {
-  console.error(err);
-  showToast(`Erreur d'initialisation (JSON local): ${err.message}`, "error");
-});
+  // La source JSON est purement cliente : son echec est une vraie erreur.
+  const jsonReady = initJsonTable().catch((err) => {
+    console.error(err);
+    showToast(`Erreur d'initialisation (JSON local): ${err.message}`, "error");
+  });
 
-// Les sources API et SQLite dependent du backend Python. Quand il est absent
-// (ex. demo hebergee sur GitHub Pages), on affiche le bandeau d'explication
-// au lieu d'un toast d'erreur bloquant.
-initApiTable().catch((err) => {
-  console.error("API table init failed:", err);
-  revealBackendNote("api");
-});
-initSqliteTable().catch((err) => {
-  console.error("SQLite table init failed:", err);
-  revealBackendNote("sqlite");
-});
+  if (await backendReachable()) {
+    await Promise.all([
+      initApiTable().catch((err) => {
+        console.warn("API table init failed:", err);
+        revealBackendNote("api");
+      }),
+      initSqliteTable().catch((err) => {
+        console.warn("SQLite table init failed:", err);
+        revealBackendNote("sqlite");
+      }),
+    ]);
+  } else {
+    // Pas de backend (ex. demo hebergee sur GitHub Pages) : on affiche le bandeau
+    // d'explication au lieu de laisser les tables echouer bruyamment.
+    revealBackendNote("api");
+    revealBackendNote("sqlite");
+  }
+
+  await jsonReady;
+}
+
+main();

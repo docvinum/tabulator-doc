@@ -1,9 +1,11 @@
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
+import { ref, reactive, onMounted, onBeforeUnmount, onUnmounted } from "vue";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { buildColumns } from "../lib/columns.js";
 import { attachPersistence } from "../lib/persistence.js";
 import { SEARCHABLE_FIELDS } from "../lib/constants.js";
+
+const REMOTE_SEARCH_DEBOUNCE = 300;
 
 const props = defineProps({
   mode: { type: String, default: "local" }, // "local" | "remote"
@@ -14,14 +16,16 @@ const props = defineProps({
   sourceLabel: { type: String, default: "" },
 });
 
-const emit = defineEmits(["ready"]);
+const emit = defineEmits(["ready", "load-error"]);
 
 const tableEl = ref(null);
+const toolbarEl = ref(null);
 const searchTerm = ref("");
 const showColMenu = ref(false);
 const columnsMeta = reactive([]);
 
 let table = null;
+let remoteSearchTimer = null;
 
 function toggleColumn(field) {
   const col = table.getColumn(field);
@@ -33,7 +37,14 @@ function toggleColumn(field) {
 function onSearchInput() {
   const term = searchTerm.value.trim().toLowerCase();
   if (props.mode === "remote") {
-    table.setPage(1); // ajaxParams() relit searchTerm.value au prochain fetch
+    // En mode serveur, chaque frappe declencherait une requete : on temporise.
+    clearTimeout(remoteSearchTimer);
+    remoteSearchTimer = setTimeout(() => {
+      // ajaxParams() relit searchTerm.value au prochain fetch
+      table.setPage(1).catch(() => {
+        /* echec de chargement deja signale par l'evenement dataLoadError */
+      });
+    }, REMOTE_SEARCH_DEBOUNCE);
   } else if (!term) {
     table.clearFilter();
   } else {
@@ -41,6 +52,10 @@ function onSearchInput() {
       SEARCHABLE_FIELDS.some((f) => String(data[f] ?? "").toLowerCase().includes(term))
     );
   }
+}
+
+function onDocumentClick(e) {
+  if (toolbarEl.value && !toolbarEl.value.contains(e.target)) showColMenu.value = false;
 }
 
 onMounted(() => {
@@ -52,6 +67,10 @@ onMounted(() => {
     // (SelectRange) ouvre accidentellement l'editeur sur la cellule de depart. L'edition
     // reste possible via double-clic ou via Entree (SelectRange appelle editCell() directement).
     editTriggerEvent: "dblclick",
+    // Avec selectableRangeColumns, un clic sur l'en-tete sert a la fois au tri et
+    // a la selection de colonne : Tabulator avertit en console et le resultat est
+    // ambigu. On restreint donc le tri au clic sur l'icone de tri.
+    headerSortClickElement: "icon",
     selectableRange: true,
     selectableRangeColumns: true,
     selectableRangeClearCells: true,
@@ -81,6 +100,10 @@ onMounted(() => {
     });
   }
 
+  if (props.mode === "remote") {
+    table.on("dataLoadError", () => emit("load-error"));
+  }
+
   table.on("tableBuilt", () => {
     columnsMeta.splice(0, columnsMeta.length, ...table.getColumns()
       .filter((c) => c.getField())
@@ -88,18 +111,24 @@ onMounted(() => {
   });
 
   attachPersistence(table, { baseUrl: props.baseUrl, sourceLabel: props.sourceLabel });
+  document.addEventListener("click", onDocumentClick);
   emit("ready", table);
 });
 
 onBeforeUnmount(() => {
   if (table) table.destroy();
 });
+
+onUnmounted(() => {
+  clearTimeout(remoteSearchTimer);
+  document.removeEventListener("click", onDocumentClick);
+});
 </script>
 
 <template>
   <div class="datatable">
     <p class="source-note"><slot name="note" /></p>
-    <div class="toolbar">
+    <div ref="toolbarEl" class="toolbar">
       <input
         v-model="searchTerm"
         type="search"
@@ -128,6 +157,19 @@ onBeforeUnmount(() => {
   font-size: 13px;
   color: #3730a3;
   margin: 0 0 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .source-note {
+    background: #171f3a;
+    border-color: #2f3d6b;
+    color: #c7d2fe;
+  }
+}
+:root[data-theme="dark"] .source-note {
+  background: #171f3a;
+  border-color: #2f3d6b;
+  color: #c7d2fe;
 }
 .toolbar {
   display: flex;

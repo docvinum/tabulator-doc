@@ -140,6 +140,9 @@ configurable dans `js/constants.js` / `src/lib/constants.js`).
   (`cell.restoreOldValue()`) et un message d'erreur est affiche (toast).
 - **Serveur pour gros volume** : la source SQLite (5000 lignes) fonctionne entierement en mode
   `remote` (`paginationMode`, `sortMode`, `filterMode`), aucune donnee n'est chargee en trop.
+- **Theme clair/sombre** : bouton de bascule (persiste via `localStorage`), suit
+  `prefers-color-scheme` par defaut, systeme de tokens CSS partage entre les deux frontends —
+  header en micro-caps teinte, grille hairline, police monospace sur les colonnes numeriques/date.
 
 ### Notes techniques
 

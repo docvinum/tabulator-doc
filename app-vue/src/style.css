@@ -244,6 +244,46 @@ body {
 }
 .thf-count[hidden] { display: none; }
 
+/* Filtre booleen (Manager) : meme badge (18px, glyphe visible 12px) et
+   memes tokens de couleur que la cellule formatee en tickCross (voir
+   `.tabulator-cell[tabulator-field="is_manager"][aria-checked]` plus bas),
+   pour que l'en-tete et le contenu partagent litteralement le meme design. */
+.thf-bool-field {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 26px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.thf-bool-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: 1px solid var(--table-border);
+  border-radius: 50%;
+  background: var(--input-surface);
+}
+.thf-bool-badge svg { width: 12px; height: 12px; display: block; }
+.thf-bool-badge.is-true { border-color: transparent; background: var(--success-tint); }
+.thf-bool-badge.is-true .tabulator-tick { fill: var(--success); }
+.thf-bool-badge.is-false { border-color: var(--border); background: var(--surface-tint); }
+.thf-bool-badge.is-false .tabulator-cross { fill: var(--cell-muted); }
+.thf-bool-badge.is-neutral::after {
+  content: "";
+  width: 7px;
+  height: 1.6px;
+  background: var(--placeholder);
+}
+.thf-bool-field:hover .thf-bool-badge { border-color: var(--pager-active-border); }
+.thf-bool-field:focus-visible .thf-bool-badge { outline: 2px solid var(--accent); outline-offset: 1px; }
+
 .thf-clear {
   position: absolute;
   top: 50%;

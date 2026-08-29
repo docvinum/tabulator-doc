@@ -101,6 +101,8 @@ The `tickCross` **formatter** (as opposed to the editor) is different: it doesn'
 .tabulator-cell[aria-checked="false"] .tabulator-cross { fill: #9aa2b1; }
 ```
 
+If a boolean column's header filter should look like the formatted cells rather than a checkbox (e.g. the same colored circular badge for true/false), restyling the native `<input type="checkbox">` isn't enough — a checkbox and a colored badge are different DOM shapes. Replace the header filter with a custom function instead, exactly like the [multiselect list filter](04-sorting-filtering-grouping.md#multiselect-list-filter-custom-editor): render the badge markup yourself, cycle `""` (no filter) → `true` → `false` on click to mirror the native tristate order, and set `headerFilterEmptyCheck: (v) => v !== true && v !== false` on the column — the value `false` is falsy, so without this override Tabulator's default empty-check would wrongly treat "filtering for false" as "no filter".
+
 ## Responsive layout (small screens)
 
 Collapse lower-priority columns into an expandable "+" row instead of horizontal scrolling:

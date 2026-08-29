@@ -226,4 +226,37 @@ onUnmounted(() => {
   white-space: nowrap;
   color: var(--text);
 }
+.col-vis-menu input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex: none;
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--input-surface);
+  cursor: pointer;
+}
+.col-vis-menu input[type="checkbox"]:hover { border-color: var(--pager-active-border); }
+.col-vis-menu input[type="checkbox"]:checked {
+  border-color: var(--pager-active-border);
+  background: var(--pager-active-bg);
+}
+.col-vis-menu input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 3px;
+  height: 6px;
+  border: solid var(--pager-active-text);
+  border-width: 0 1.6px 1.6px 0;
+  transform: rotate(45deg);
+}
+.col-vis-menu input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 </style>

@@ -25,6 +25,7 @@
   --icon-muted: #8b93a1;
   --row-hover: #f8fafc;
   --success: #16a34a;
+  --success-tint: #dcfce7;
   --error: #dc2626;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
@@ -56,6 +57,7 @@
     --pager-active-text: #eaf1ff;
     --icon-muted: #6f7887;
     --row-hover: #191d24;
+    --success-tint: #123c22;
   }
 }
 
@@ -85,6 +87,7 @@
   --pager-active-text: #eaf1ff;
   --icon-muted: #6f7887;
   --row-hover: #191d24;
+  --success-tint: #123c22;
 }
 
 * { box-sizing: border-box; }
@@ -273,6 +276,39 @@ main { padding: 20px 32px 40px; }
   gap: 6px;
   white-space: nowrap;
   color: var(--text);
+}
+.col-vis-menu input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex: none;
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--input-surface);
+  cursor: pointer;
+}
+.col-vis-menu input[type="checkbox"]:hover { border-color: var(--pager-active-border); }
+.col-vis-menu input[type="checkbox"]:checked {
+  border-color: var(--pager-active-border);
+  background: var(--pager-active-bg);
+}
+.col-vis-menu input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 3px;
+  height: 6px;
+  border: solid var(--pager-active-text);
+  border-width: 0 1.6px 1.6px 0;
+  transform: rotate(45deg);
+}
+.col-vis-menu input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 /* ---- Tabulator datagrid restyle: tinted micro-caps header, full hairline
@@ -517,6 +553,80 @@ main { padding: 20px 32px 40px; }
 }
 .tabulator .tabulator-cell .tabulator-tick,
 .tabulator .tabulator-cell .tabulator-cross { fill: var(--icon-muted); }
+/* Case a cocher tristate de l'editeur/filtre "tickCross" (colonne Manager) :
+   memes couleurs et memes dimensions que .thf-option-box (le filtre liste
+   multi-selection), pour que toutes les cases a cocher de l'app se ressemblent. */
+.tabulator input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex: none;
+  width: 13px;
+  height: 13px;
+  margin: 0 !important; /* Tabulator pose `marginTop: 5px` en style inline sur cet editeur */
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--input-surface);
+  cursor: pointer;
+}
+.tabulator input[type="checkbox"]:hover { border-color: var(--pager-active-border); }
+.tabulator input[type="checkbox"]:checked,
+.tabulator input[type="checkbox"]:indeterminate {
+  border-color: var(--pager-active-border);
+  background: var(--pager-active-bg);
+}
+.tabulator input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 3px;
+  height: 6px;
+  border: solid var(--pager-active-text);
+  border-width: 0 1.6px 1.6px 0;
+  transform: rotate(45deg);
+}
+.tabulator input[type="checkbox"]:indeterminate::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 5px;
+  width: 7px;
+  height: 1.6px;
+  background: var(--pager-active-text);
+}
+.tabulator input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+/* Colonne booleenne (Manager) : badge colore et differencie plutot que deux
+   icones de la meme couleur grise, ou seule la forme du glyphe changeait
+   (peu lisible en survol rapide de la colonne, voir capture utilisateur). */
+.tabulator-row .tabulator-cell[tabulator-field="is_manager"] svg {
+  width: 18px;
+  height: 18px;
+  padding: 3px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+/* Oui : disque plein vert. Non : anneau gris (contour visible, pas seulement
+   un remplissage a peine plus fonce que le fond de la ligne) -- le
+   plein/creux est plus vite lisible que la seule difference de glyphe. */
+.tabulator-row .tabulator-cell[tabulator-field="is_manager"][aria-checked="true"] svg {
+  background: var(--success-tint);
+}
+.tabulator-row .tabulator-cell[tabulator-field="is_manager"][aria-checked="true"] .tabulator-tick {
+  fill: var(--success);
+}
+.tabulator-row .tabulator-cell[tabulator-field="is_manager"][aria-checked="false"] svg {
+  background: var(--surface-tint);
+  border-color: var(--border);
+}
+.tabulator-row .tabulator-cell[tabulator-field="is_manager"][aria-checked="false"] .tabulator-cross {
+  fill: var(--cell-muted);
+}
 .tabulator .tabulator-cell.tabulator-editing { border-color: var(--accent); }
 .tabulator .tabulator-cell.tabulator-validation-fail { border-color: var(--error); }
 .tabulator .tabulator-cell.tabulator-validation-fail input,

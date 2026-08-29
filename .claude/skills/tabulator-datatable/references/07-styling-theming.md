@@ -40,6 +40,32 @@ Prefer toggling a CSS class over inline styles so hover states/dark mode still a
 }
 ```
 
+## Checkboxes & tickCross
+
+The `tickCross` editor/header filter renders a native `<input type="checkbox">` (tristate via `editorParams: { tristate: true }`, indeterminate state via the standard `:indeterminate` pseudo-class). Restyle it with `appearance: none` + a `::after` checkmark:
+
+```css
+.tabulator input[type="checkbox"] {
+  appearance: none; position: relative;
+  width: 14px; height: 14px;
+  border: 1px solid #ccc; border-radius: 3px; background: #fff;
+}
+.tabulator input[type="checkbox"]:checked,
+.tabulator input[type="checkbox"]:indeterminate { border-color: #2563eb; background: #2563eb; }
+.tabulator input[type="checkbox"]:checked::after {
+  content: ""; position: absolute; left: 4px; top: 1px; width: 3px; height: 6px;
+  border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+```
+If Tabulator sets an inline style (e.g. `marginTop`), override with `margin: 0 !important` — inline styles beat any stylesheet selector.
+
+The `tickCross` **formatter** is different: no `<input>`, it injects an SVG (`.tabulator-tick`/`.tabulator-cross`) and sets `aria-checked="true"/"false"/"mixed"` on the cell. Style true/false via that attribute rather than icon shape alone — same-colored icons that differ only by glyph are easy to misread at a glance:
+
+```css
+.tabulator-cell[aria-checked="true"] .tabulator-tick { fill: #16a34a; }
+.tabulator-cell[aria-checked="false"] .tabulator-cross { fill: #9aa2b1; }
+```
+
 ## Responsive layout (small screens)
 
 ```js

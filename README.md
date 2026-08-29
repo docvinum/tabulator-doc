@@ -37,9 +37,10 @@ Deux implementations du meme cahier des charges sont fournies, partageant le mem
 Le rendu de la demo vanilla est publie sur GitHub Pages :
 **https://docvinum.github.io/tabulator-doc/**
 
-Seul l'onglet **1. JSON local** y est fonctionnel (100 % cote client). Les onglets **API** et
-**SQLite** dependent du backend Python et affichent un bandeau explicatif sur la version hebergee ;
-pour les essayer, lancer le backend en local (voir ci-dessous). Le deploiement est automatique a
+Seul l'onglet **1. JSON local** y est fonctionnel (100 % cote client). Les onglets
+**2. API &mdash; client-side** et **3. API &mdash; server-side** dependent du backend Python et
+affichent un bandeau explicatif sur la version hebergee ; pour les essayer, lancer le backend en
+local (voir ci-dessous). Le deploiement est automatique a
 chaque push sur `main` touchant `demo-vanilla/` (workflow `.github/workflows/pages.yml`).
 
 ### Architecture
@@ -68,8 +69,8 @@ app-vue/          Demo Vue 3 + Vite (sert public/data/employees.json + appelle l
 | Source | Lecture | Ecriture | Tri/Filtre/Recherche | Notes |
 |---|---|---|---|---|
 | **1. JSON local** | `data/employees.json` charge directement par le navigateur | Locale uniquement (pas de backend) | Cote client (Tabulator) | 60 employes, aucune dependance au backend |
-| **2. API endpoint** | `GET /api/employees-api` (backend, liste en memoire) | `PATCH /api/employees-api/{id}` | Cote client (petit volume) | 200 employes, persiste tant que le process backend tourne |
-| **3. SQLite (gros volume)** | `GET /api/employees` (backend, table SQLite) | `PATCH /api/employees/{id}` | **Cote serveur** (tri/filtre/recherche/pagination) | 5000 employes, persiste sur disque (`backend/data/app.db`) |
+| **2. API &mdash; client-side** | `GET /api/employees-api` (backend, liste en memoire) | `PATCH /api/employees-api/{id}` | Cote client : tout le jeu est charge, Tabulator trie/filtre en memoire | 200 employes, persiste tant que le process backend tourne |
+| **3. API &mdash; server-side** | `GET /api/employees` (backend, table SQLite, mode `remote`) | `PATCH /api/employees/{id}` | **Cote serveur** : une page a la fois, tri/filtre/recherche/pagination traduits en SQL | 5000 employes, persiste sur disque (`backend/data/app.db`) |
 
 ### Demarrage rapide
 

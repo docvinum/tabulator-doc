@@ -32,6 +32,16 @@ Deux implementations du meme cahier des charges sont fournies, partageant le mem
 - **`demo-vanilla/`** — JavaScript vanilla (sans framework), Tabulator charge via npm.
 - **`app-vue/`** — application Vue 3 + Vite, avec un composant `DataTable.vue` reutilisable.
 
+### Demo en ligne
+
+Le rendu de la demo vanilla est publie sur GitHub Pages :
+**https://docvinum.github.io/tabulator-doc/**
+
+Seul l'onglet **1. JSON local** y est fonctionnel (100 % cote client). Les onglets **API** et
+**SQLite** dependent du backend Python et affichent un bandeau explicatif sur la version hebergee ;
+pour les essayer, lancer le backend en local (voir ci-dessous). Le deploiement est automatique a
+chaque push sur `main` touchant `demo-vanilla/` (workflow `.github/workflows/pages.yml`).
+
 ### Architecture
 
 ```

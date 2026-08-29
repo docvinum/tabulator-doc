@@ -95,3 +95,32 @@ onUnmounted(() => { table?.destroy(); table = null; });
 **Cause**: `sorter` left to auto-detection on values that are numbers-as-strings or mixed types.
 
 **Fix**: always set `sorter: "number"` / `"date"` explicitly per column — see `03-columns.md` and `04-sorting-filtering-grouping.md`.
+
+## 11. A custom global copy/paste handler swallows paste into every input on the page
+
+**Symptom**: a custom Ctrl+C/Ctrl+V "Excel-like" range-clipboard feature (built on `selectableRange`) works on the table, but pasting into any other input on the page (search box, header filter, form field) silently does nothing or replaces the wrong thing.
+
+**Cause**: `document.addEventListener("paste"/"keydown", ...)` fires for the whole page, not just the table. Without a target check it unconditionally calls `e.preventDefault()` and redirects into the cell range, hijacking every other input's native copy/paste.
+
+**Fix**: bail out early when the event target is a text-entry element:
+
+```js
+function isTextEntryTarget(t) {
+  if (!(t instanceof Element)) return false;
+  if (t.isContentEditable) return true;
+  return ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName);
+}
+document.addEventListener("paste", (e) => {
+  if (isTextEntryTarget(e.target)) return;
+  // ...redirect into the selected range...
+});
+```
+Do the same for the copy handler, and also skip it when there's a native text selection outside `.tabulator` (let the browser copy that text normally).
+
+## 12. Clicking a header filter selects the whole column instead of focusing it
+
+**Symptom**: with `selectableRange`/`selectableRangeColumns`, clicking into a header filter selects the entire column instead of focusing the filter; its text can turn unreadable (e.g. white-on-white) from inheriting the "selected column" color.
+
+**Cause**: Tabulator only calls `stopPropagation()` on the header filter's `mousedown` when `headerFilterLiveFilter` isn't `false`. A column with `headerFilterLiveFilter: false` (or a custom `headerFilter` function) lets the `mousedown` bubble to `SelectRange`'s column handler.
+
+**Fix**: `wrap.addEventListener("mousedown", (e) => e.stopPropagation())` on the filter's container element, and give the filter's own text an explicit CSS `color` rather than relying on inheritance.

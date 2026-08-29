@@ -111,6 +111,48 @@ onUnmounted(() => {
 
 **Fix**: always set `sorter: "number"` / `"date"` explicitly per column as shown in [03-columns.md](03-columns.md) and [04-sorting-filtering-grouping.md](04-sorting-filtering-grouping.md) — don't rely on auto-detection for anything but plain strings.
 
+## 11. A custom global copy/paste handler swallows paste into every input on the page
+
+**Symptom**: a Ctrl+C/Ctrl+V "Excel-like" clipboard feature built on top of `selectableRange` (copy a cell range, paste into a range of editable cells) works fine on the table itself, but pasting into *any* other input on the page — a search box, a header filter, a form field — silently does nothing, or replaces the wrong thing.
+
+**Cause**: `document.addEventListener("paste", ...)` (or `"keydown"` for Ctrl+C) registered at the document level fires for every paste/copy anywhere on the page, not just inside the table. Without a target check, the handler unconditionally calls `e.preventDefault()` and redirects the clipboard content into the active cell range, hijacking the browser's native copy/paste for every other input.
+
+**Fix**: bail out early when `e.target` is a text-entry element, before doing anything else:
+
+```js
+function isTextEntryTarget(target) {
+  if (!(target instanceof Element)) return false;
+  if (target.isContentEditable) return true;
+  return ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+}
+
+document.addEventListener("paste", (e) => {
+  if (isTextEntryTarget(e.target)) return; // let the browser handle it natively
+  // ...redirect into the selected range...
+});
+```
+
+Do the same for the Ctrl+C handler, and also skip it when there's a native text selection outside the table (`window.getSelection()` non-collapsed and not inside `.tabulator`) — otherwise selecting and copying a sentence of page text next to the table copies the cell range instead.
+
+## 12. Clicking inside a header filter selects the whole column instead of focusing the filter
+
+**Symptom**: with `selectableRange`/`selectableRangeColumns` enabled, clicking into a header filter input (to type a value, or open a custom dropdown) instead selects the entire column — the header filter's text can even become unreadable (e.g. white-on-white) because it inherits the "selected column" text color.
+
+**Cause**: Tabulator only calls `stopPropagation()` on the header filter's `mousedown` when `headerFilterLiveFilter` is not explicitly `false`. Any column with `headerFilterLiveFilter: false` (or a custom `headerFilter` function that doesn't opt into Tabulator's live-filter wiring) lets the `mousedown` bubble up to `SelectRange`'s column-header handler, which selects the column.
+
+**Fix**: stop propagation yourself on the header filter's container:
+
+```js
+function myHeaderFilter(cell, onRendered, success, cancel, params) {
+  const wrap = document.createElement("div");
+  wrap.addEventListener("mousedown", (e) => e.stopPropagation());
+  // ...build the actual input/control inside wrap...
+  return wrap;
+}
+```
+
+Also don't rely on inherited text color for header filter styling — give the filter's input/label an explicit `color` in CSS so it stays readable regardless of the column's selected/hover state.
+
 ## Next
 
 → [12-api-cheatsheet.md](12-api-cheatsheet.md) for a condensed lookup table once you've internalized the above.

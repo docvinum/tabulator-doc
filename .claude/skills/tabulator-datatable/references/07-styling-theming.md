@@ -66,6 +66,8 @@ The `tickCross` **formatter** is different: no `<input>`, it injects an SVG (`.t
 .tabulator-cell[aria-checked="false"] .tabulator-cross { fill: #9aa2b1; }
 ```
 
+If a boolean header filter should look like the formatted cell (colored badge) rather than a checkbox, restyling the `<input>` isn't enough — different DOM shape. Use a custom header filter function instead (see `04-sorting-filtering-grouping.md` multiselect section): render the badge yourself, cycle `""` → `true` → `false` on click, and set `headerFilterEmptyCheck: (v) => v !== true && v !== false` — `false` is falsy, so the default empty-check would otherwise treat "filtering for false" as "no filter".
+
 ## Responsive layout (small screens)
 
 ```js

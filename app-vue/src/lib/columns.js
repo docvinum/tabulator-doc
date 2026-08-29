@@ -4,6 +4,7 @@ import {
   numberHeaderFilter,
   dateHeaderFilter,
   listHeaderFilter,
+  booleanHeaderFilter,
 } from "./headerFilters.js";
 
 const EMAIL_REGEX_SRC = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
@@ -99,7 +100,12 @@ export function buildColumns(distinct = {}, opts = {}) {
       title: "Manager", field: "is_manager", hozAlign: "center", width: 100,
       editor: editable ? "tickCross" : false,
       formatter: "tickCross",
-      headerFilter: "tickCross", headerFilterParams: { tristate: true },
+      headerFilter: booleanHeaderFilter,
+      // Un editeur d'en-tete fourni en fonction (plutot que la chaine
+      // "tickCross") n'herite pas du garde-fou que Tabulator applique
+      // lui-meme dans ce cas precis : sans lui, `false` (falsy) serait a
+      // tort traite comme "filtre vide" par le detecteur par defaut.
+      headerFilterEmptyCheck: (value) => value !== true && value !== false,
     },
     {
       title: "Note", field: "rating", hozAlign: "center", width: 90, sorter: "number",
